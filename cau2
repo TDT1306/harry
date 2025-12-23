@@ -1,0 +1,123 @@
+#include <stdio.h>
+
+/**
+ * ĐỀ 2 - CÂU 1: QUẢN LÝ MẢNG SỐ NGUYÊN (NÂNG CAO)
+ * 
+ * Mục tiêu:
+ * - Nhập n (1 <= n <= 100) và mảng a[n].
+ * - Các chức năng: Nhập/xuất, tìm Max/Min, Sắp xếp tăng dần, Kiểm tra mảng đối xứng.
+ */
+
+// Hàm nhập mảng số nguyên
+void nhapMang(int a[], int *n) {
+    // Vòng lặp kiểm tra điều kiện đầu vào của n
+    do {
+        printf("Nhap so luong phan tu n (1 <= n <= 100): ");
+        scanf("%d", n);
+        if (*n < 1 || *n > 100) {
+            printf("n phai trong khoang [1, 100]. Nhap lai!\n");
+        }
+    } while (*n < 1 || *n > 100);
+
+    // Nhập từng phần tử
+    for (int i = 0; i < *n; i++) {
+        printf("Nhap a[%d]: ", i);
+        scanf("%d", &a[i]);
+    }
+}
+
+// Hàm xuất mảng ra màn hình
+void xuatMang(int a[], int n) {
+    printf("Mang hien tai: ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", a[i]);
+    }
+    printf("\n");
+}
+
+// Hàm tìm giá trị lớn nhất (Max) và nhỏ nhất (Min) trong mảng
+// Logic: Giả sử phần tử đầu tiên là Max và Min, duyệt các phần tử còn lại để cập nhật
+void timMaxMin(int a[], int n) {
+    int max = a[0];
+    int min = a[0];
+    for (int i = 1; i < n; i++) { // Duyệt từ phần tử thứ 2
+        if (a[i] > max) max = a[i]; // Tìm thấy số lớn hơn max hiện tại -> cập nhật max
+        if (a[i] < min) min = a[i]; // Tìm thấy số nhỏ hơn min hiện tại -> cập nhật min
+    }
+    printf("Gia tri lon nhat: %d\n", max);
+    printf("Gia tri nho nhat: %d\n", min);
+}
+
+// Hàm sắp xếp mảng tăng dần (Sử dụng thuật toán Interchange Sort)
+// Logic: So sánh từng cặp phần tử, nếu a[i] > a[j] (nghịch thế) thì đổi chỗ
+void sapXepTangDan(int a[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (a[i] > a[j]) { // Nếu phần tử đứng trước lớn hơn phần tử đứng sau
+                // Hoán đổi vị trí (Swap)
+                int temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+    }
+    printf("Da sap xep tang dan.\n");
+}
+
+// Hàm kiểm tra mảng đối xứng
+// Logic: Mảng đối xứng là mảng mà đọc từ trái sang phải giống hệt từ phải sang trái.
+// Tức là a[i] == a[n-1-i]
+void kiemTraDoiXung(int a[], int n) {
+    int doiXung = 1; // Giả sử là đối xứng (flag = 1)
+    
+    // Chỉ cần duyệt đến giữa mảng là đủ
+    for (int i = 0; i < n / 2; i++) {
+        // So sánh phần tử đầu (i) với phần tử đối xứng ở cuối (n-1-i)
+        if (a[i] != a[n - 1 - i]) {
+            doiXung = 0; // Nếu khác nhau -> không đối xứng
+            break; // Thoát vòng lặp ngay vì đã biết kết quả
+        }
+    }
+
+    if (doiXung) {
+        printf("Mang LA mang doi xung.\n");
+    } else {
+        printf("Mang KHONG PHAI la mang doi xung.\n");
+    }
+}
+
+int main() {
+    int a[100];
+    int n;
+
+    // (a) Nhập và xuất mảng
+    printf("--- Cau 1a: Nhap xuat mang ---\n");
+    nhapMang(a, &n);
+    xuatMang(a, n);
+
+    // (b) Tìm max min
+    printf("\n--- Cau 1b: Tim Max Min ---\n");
+    timMaxMin(a, n);
+
+    // Lưu ý về luồng chạy:
+    // Chức năng sắp xếp sẽ làm THAY ĐỔI vị trí các phần tử trong mảng gốc a.
+    // Nếu chạy (c) trước (d), thì (d) sẽ kiểm tra tính đối xứng của mảng ĐÃ SẮP XẾP.
+    // Để kiểm tra mảng ban đầu xem có đối xứng không, tốt nhất nên kiểm tra trước khi sắp xếp,
+    // hoặc copy ra một mảng phụ.
+    // Trong bài giải này, tôi sẽ tạo một bản sao để sắp xếp, giữ nguyên mảng gốc cho việc kiểm tra đối xứng (nếu cần).
+    // Tuy nhiên, đề bài thường yêu cầu thực hiện chức năng trên chính mảng đó.
+    // Ở đây tôi sẽ thực hiện Sắp xếp trên mảng a luôn, nhưng lưu ý là mảng sẽ thay đổi sau bước này.
+    
+    // (c) Sắp xếp
+    printf("\n--- Cau 1c: Sap xep tang dan ---\n");
+    sapXepTangDan(a, n); // Gọi hàm sắp xếp, mảng a bị thay đổi thứ tự tại đây
+    xuatMang(a, n); // In lại mảng sau khi sắp xếp để kiểm chứng
+
+    // (d) Kiểm tra đối xứng
+    printf("\n--- Cau 1d: Kiem tra doi xung ---\n");
+    // Kiểm tra tính đối xứng của mảng hiện tại (đã được sắp xếp ở trên)
+    // Nếu muốn check mảng ban đầu nhập vào thì phần này nên đưa lên trước phần (c)
+    kiemTraDoiXung(a, n); 
+
+    return 0;
+}
