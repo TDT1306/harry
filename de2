@@ -1,0 +1,183 @@
+#include <stdio.h>
+#include <string.h>
+
+/**
+ * ĐỀ 2 - CÂU 2: QUẢN LÝ DANH SÁCH SINH VIÊN
+ * 
+ * Mục tiêu:
+ * - Struct SinhVien: MaSV, HoTen, NamSinh, DiemC.
+ * - Quản lý danh sách n sinh viên.
+ * - Chức năng: Nhập/xuất, tìm điểm cao nhất, lọc sinh viên sinh sau 2003, tìm tên dài nhất.
+ */
+
+// Hàm xóa buffer stdin an toàn
+void clearBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// Định nghĩa struct SinhVien
+typedef struct {
+    char maSV[30];
+    char hoTen[50];
+    int namSinh;
+    float diemC;
+} SinhVien;
+
+// Hàm nhập danh sách n sinh viên
+void nhapDanhSach(SinhVien a[], int *n) {
+    // Nhập số lượng sinh viên n
+    do {
+        printf("Nhap so luong sinh vien n (n <= 30): ");
+        scanf("%d", n);
+        if (*n < 1 || *n > 30) {
+            printf("So luong khong hop le. Nhap lai!\n");
+        }
+    } while (*n < 1 || *n > 30);
+
+    // Vòng lặp nhập thông tin cho từng sinh viên
+    for (int i = 0; i < *n; i++) {
+        printf("--- Nhap thong tin SV thu %d ---\n", i + 1);
+        printf("Ma SV: ");
+        clearBuffer(); // Xóa buffer an toàn
+        fgets(a[i].maSV, sizeof(a[i].maSV), stdin);
+        a[i].maSV[strcspn(a[i].maSV, "\n")] = 0; // Xóa ký tự xuống dòng
+
+        printf("Ho ten: ");
+        fgets(a[i].hoTen, sizeof(a[i].hoTen), stdin);
+        a[i].hoTen[strcspn(a[i].hoTen, "\n")] = 0;
+
+        // Thêm validation cho năm sinh (1900-2025)
+        do {
+            printf("Nam sinh (1900-2025): ");
+            scanf("%d", &a[i].namSinh);
+            if (a[i].namSinh < 1900 || a[i].namSinh > 2025) {
+                printf("Nam sinh khong hop le. Nhap lai!\n");
+            }
+        } while (a[i].namSinh < 1900 || a[i].namSinh > 2025);
+
+        // Thêm validation cho điểm C (0-10)
+        do {
+            printf("Diem C (0-10): ");
+            scanf("%f", &a[i].diemC);
+            if (a[i].diemC < 0 || a[i].diemC > 10) {
+                printf("Diem phai trong khoang [0, 10]. Nhap lai!\n");
+            }
+        } while (a[i].diemC < 0 || a[i].diemC > 10);
+    }
+}
+
+// Hàm phụ trợ để in thông tin 1 sinh viên trên 1 dòng
+void inSinhVien(SinhVien sv) {
+    // %-10s: in chuỗi canh trái trong khoảng rộng 10 ký tự
+    // %-5.2f: in số thực canh trái, rộng 5 ký tự, lấy 2 số lẻ
+    printf("%-10s %-20s %-10d %-5.2f\n", sv.maSV, sv.hoTen, sv.namSinh, sv.diemC);
+}
+
+// Hàm xuất danh sách sinh viên dạng bảng
+void xuatDanhSach(SinhVien a[], int n) {
+    printf("\n--- Danh sach sinh vien ---\n");
+    // In tiêu đề bảng
+    printf("%-10s %-20s %-10s %-5s\n", "Ma SV", "Ho Ten", "Nam Sinh", "Diem C");
+    for (int i = 0; i < n; i++) {
+        inSinhVien(a[i]);
+    }
+}
+
+// Hàm tìm sinh viên có điểm C cao nhất
+// Logic: Tìm giá trị max trước, sau đó duyệt lại danh sách để in ra các SV đạt điểm đó (phòng trường hợp có nhiều người bằng điểm nhau)
+void timDiemCaoNhat(SinhVien a[], int n) {
+    // Kiểm tra danh sách rỗng
+    if (n <= 0) {
+        printf("Danh sach rong!\n");
+        return;
+    }
+    
+    float maxDiem = a[0].diemC;
+    // Tìm max
+    for (int i = 1; i < n; i++) {
+        if (a[i].diemC > maxDiem) {
+            maxDiem = a[i].diemC;
+        }
+    }
+
+    printf("\n--- Sinh vien co diem C cao nhat (%.2f) ---\n", maxDiem);
+    printf("%-10s %-20s %-10s %-5s\n", "Ma SV", "Ho Ten", "Nam Sinh", "Diem C");
+    // In danh sách các SV có điểm bằng max
+    for (int i = 0; i < n; i++) {
+        if (a[i].diemC == maxDiem) {
+            inSinhVien(a[i]);
+        }
+    }
+}
+
+// Hàm in danh sách sinh viên sinh sau năm 2003
+void inSinhSau2003(SinhVien a[], int n) {
+    printf("\n--- Sinh vien sinh sau nam 2003 ---\n");
+    int found = 0;
+    for (int i = 0; i < n; i++) {
+        if (a[i].namSinh > 2003) { // Kiểm tra điều kiện năm sinh
+            if (!found) {
+                // In tiêu đề bảng khi tìm thấy người đầu tiên
+                printf("%-10s %-20s %-10s %-5s\n", "Ma SV", "Ho Ten", "Nam Sinh", "Diem C");
+            }
+            inSinhVien(a[i]);
+            found = 1;
+        }
+    }
+    if (!found) {
+        printf("Khong co sinh vien nao.\n");
+    }
+}
+
+// Hàm tìm sinh viên có họ tên dài nhất
+// Logic: Tương tự tìm điểm cao nhất, ta tìm độ dài max trước (dùng strlen)
+void timTenDaiNhat(SinhVien a[], int n) {
+    // Kiểm tra danh sách rỗng
+    if (n <= 0) {
+        printf("Danh sach rong!\n");
+        return;
+    }
+    
+    int maxLen = strlen(a[0].hoTen);
+    // Tìm độ dài lớn nhất
+    for (int i = 1; i < n; i++) {
+        int len = strlen(a[i].hoTen);
+        if (len > maxLen) {
+            maxLen = len;
+        }
+    }
+
+    printf("\n--- Sinh vien co ho ten dai nhat (%d ky tu) ---\n", maxLen);
+    printf("%-10s %-20s %-10s %-5s\n", "Ma SV", "Ho Ten", "Nam Sinh", "Diem C");
+    // In những SV có tên độ dài bằng maxLen
+    for (int i = 0; i < n; i++) {
+        if (strlen(a[i].hoTen) == maxLen) {
+            inSinhVien(a[i]);
+        }
+    }
+}
+
+int main() {
+    SinhVien ds[30]; // Mảng chứa tối đa 30 sinh viên
+    int n;           // Số lượng sinh viên thực tế
+
+    // (a) Nhập và xuất danh sách
+    printf("--- Cau 2a: Nhap xuat danh sach ---\n");
+    nhapDanhSach(ds, &n);
+    xuatDanhSach(ds, n);
+
+    // (b) Tìm điểm cao nhất
+    printf("\n--- Cau 2b: Tim diem cao nhat ---\n");
+    timDiemCaoNhat(ds, n);
+
+    // (c) Lọc sinh viên sinh sau năm 2003
+    printf("\n--- Cau 2c: Sinh sau 2003 ---\n");
+    inSinhSau2003(ds, n);
+
+    // (d) Tìm sinh viên có tên dài nhất
+    printf("\n--- Cau 2d: Tim ten dai nhat ---\n");
+    timTenDaiNhat(ds, n);
+
+    return 0; // Kết thúc
+}
